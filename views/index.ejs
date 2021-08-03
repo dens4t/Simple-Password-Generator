@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Password Generator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  </head>
+  <script>
+    const newPassword = () => {
+        const copyButton = document.querySelector('#copyButton');
+        const codeEle = document.querySelector('#sampleCode');
+        const size = document.querySelector('#passwordSize').value;
+        let newPassword = document.querySelector('#newPassword');
+        axios.get('/new/'+size)
+            .then((response) => {
+                if (response.data.status == "ok"){
+                    newPassword.innerText = response.data.result;
+                    copyButton.innerText = 'Copy';
+                }else{
+                    alert(response.data.result);
+                }
+            }, (error) => {
+                console.log(error);
+            });
+    }
+    const copyPassword = () => {
+        const copyButton = document.querySelector('#copyButton');
+        const codeEle = document.querySelector('#sampleCode');
+        const selection = window.getSelection();
+
+        // Save the current selection
+        const currentRange = selection.rangeCount === 0
+            ? null : selection.getRangeAt(0);
+
+        // Select the text content of code element
+        const range = document.createRange();
+        range.selectNodeContents(codeEle);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        // Copy to the clipboard
+        try {
+            document.execCommand('copy');
+            copyButton.innerHTML = 'Copied';
+        } catch (err) {
+            // Unable to copy
+            copyButton.innerHTML = 'Copy';
+        } finally {
+            // Restore the previous selection
+            selection.removeAllRanges();
+            currentRange && selection.addRange(currentRange);
+        }
+    }
+  </script>
+  <body>
+  <section class="section">
+    <div class="container">
+      <!-- Main container -->
+<nav class="level">
+    <!-- Left side -->
+    <div class="level-left">
+      <div class="level-item">
+        <p class="subtitle is-5">
+          <strong>Password Generator</strong>
+        </p>
+        <p class="level-item" style="margin-left:20px;"><input id="passwordSize" class="input is-small" style="width:70px" type="number" value="10" placeholder="Size"></p>
+        <p class="level-item"><a  class="button is-success is-small is-rounded" onclick="newPassword()">New</a></p>
+      </div>
+    </div>
+  </nav>
+      
+      <div class="columns">
+          <div class="column is-4">
+            <article class="message is-success">
+                <div class="message-body">
+                    <pre id="sampleCode"><code id="newPassword"><%= newPassword %></code></pre>
+                    <a id="copyButton" class="button is-info is-small is-rounded is-pulled-right" onclick="copyPassword()">Copy</a>
+                </div>
+              </article>
+          </div>
+      </div>
+      <div class="columns">
+        <div class="column is-4">
+            Save the password in the right place
+        </div>
+    </div>
+    </div>
+  </section>
+  </body>
+</html>
