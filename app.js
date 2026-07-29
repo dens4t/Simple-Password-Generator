@@ -12,6 +12,9 @@ function isNumber(n) {
 // gunakan ejs
 app.set('view engine', 'ejs');
 
+// Serve static files from public directory
+app.use(express.static('public'));
+
 app.get('/', (req, res) => {
   res.render('index', {
     newPassword: password.getRandomString(12)
@@ -20,21 +23,26 @@ app.get('/', (req, res) => {
 
 app.get('/new/:id', (req, res) => {
   const { id } = req.params;
+  const options = {
+    useSpecial: req.query.special !== 'false',
+    useNumbers: req.query.numbers !== 'false',
+    useUpper: req.query.upper !== 'false',
+    useLower: req.query.lower !== 'false'
+  };
+
   if (isNumber(id)) {
-    if (id > 24 || id <= 5) {
+    if (id > 64 || id <= 5) {
       res.status(200).json({
         status: 'fail',
-        result: 'Password length must be greater than 5 and lower than 24'
+        result: 'Password length must be greater than 5 and lower than 64'
       });
-    }
-    else {
+    } else {
       res.status(200).json({
         status: 'ok',
-        result: password.getRandomString(id)
+        result: password.getRandomString(Number(id), options)
       });
     }
-  }
-  else {
+  } else {
     res.status(400).json({
       status: 'fail',
       result: 'Not valid length'
@@ -43,5 +51,5 @@ app.get('/new/:id', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log(`BRUTE PASS app listening at http://localhost:${port}`);
 });

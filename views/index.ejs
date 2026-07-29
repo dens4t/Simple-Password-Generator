@@ -1,92 +1,300 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Password Generator</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-  </head>
-  <script>
-    const newPassword = () => {
-        const copyButton = document.querySelector('#copyButton');
-        const codeEle = document.querySelector('#sampleCode');
-        const size = document.querySelector('#passwordSize').value;
-        let newPassword = document.querySelector('#newPassword');
-        axios.get('/new/'+size)
-            .then((response) => {
-                if (response.data.status == "ok"){
-                    newPassword.innerText = response.data.result;
-                    copyButton.innerText = 'Copy';
-                }else{
-                    alert(response.data.result);
-                }
-            }, (error) => {
-                console.log(error);
-            });
-    }
-    const copyPassword = () => {
-        const copyButton = document.querySelector('#copyButton');
-        const codeEle = document.querySelector('#sampleCode');
-        const selection = window.getSelection();
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BRUTE PASS — Secure Password Generator</title>
+  <link rel="stylesheet" href="/neobrutal.css">
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+  <div class="container">
 
-        // Save the current selection
-        const currentRange = selection.rangeCount === 0
-            ? null : selection.getRangeAt(0);
+    <!-- Cube -->
+    <div class="cw"><div class="cu" id="cube">
+      <div class="cf f0">P</div>
+      <div class="cf f1">W</div>
+      <div class="cf f2">#1</div>
+      <div class="cf f3">$ec</div>
+      <div class="cf f4">🔒</div>
+      <div class="cf f5">⚡</div>
+    </div></div>
 
-        // Select the text content of code element
-        const range = document.createRange();
-        range.selectNodeContents(codeEle);
-        selection.removeAllRanges();
-        selection.addRange(range);
+    <!-- Header -->
+    <header class="hd">
+      <h1>BRUTE PASS</h1>
+      <p class="sub">Generate Strong Passwords in Seconds</p>
+    </header>
 
-        // Copy to the clipboard
-        try {
-            document.execCommand('copy');
-            copyButton.innerHTML = 'Copied';
-        } catch (err) {
-            // Unable to copy
-            copyButton.innerHTML = 'Copy';
-        } finally {
-            // Restore the previous selection
-            selection.removeAllRanges();
-            currentRange && selection.addRange(currentRange);
-        }
-    }
-  </script>
-  <body>
-  <section class="section">
-    <div class="container">
-      <!-- Main container -->
-<nav class="level">
-    <!-- Left side -->
-    <div class="level-left">
-      <div class="level-item">
-        <p class="subtitle is-5">
-          <strong>Password Generator</strong>
-        </p>
-        <p class="level-item" style="margin-left:20px;"><input id="passwordSize" class="input is-small" style="width:70px" type="number" value="10" placeholder="Size"></p>
-        <p class="level-item"><a  class="button is-success is-small is-rounded" onclick="newPassword()">New</a></p>
-      </div>
-    </div>
-  </nav>
-      
-      <div class="columns">
-          <div class="column is-4">
-            <article class="message is-success">
-                <div class="message-body">
-                    <pre id="sampleCode"><code id="newPassword"><%= newPassword %></code></pre>
-                    <a id="copyButton" class="button is-info is-small is-rounded is-pulled-right" onclick="copyPassword()">Copy</a>
-                </div>
-              </article>
-          </div>
-      </div>
-      <div class="columns">
-        <div class="column is-4">
-            Save the password in the right place
+    <!-- Main Card -->
+    <div class="card">
+
+      <!-- Password Display -->
+      <div class="pwa">
+        <div class="pwl">🔑 Generated Password</div>
+        <div class="pwb">
+          <div class="pwt" id="newPassword" aria-live="polite"><%= newPassword %></div>
+          <span class="pwh">Click to copy</span>
+          <button class="bcp" id="copyBtn" onclick="copyPassword()">📋 Copy</button>
         </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="cg">
+        <!-- Length -->
+        <div class="cb">
+          <div class="cl">📏 Password Length</div>
+          <div class="lb"><div class="lf" id="lenFill"></div></div>
+          <div class="lm"><span>8</span><span>12</span><span>16</span><span>20</span><span>24</span></div>
+          <div class="ls"><input type="range" id="lenSlider" min="8" max="24" value="12"></div>
+          <div class="lv" id="lenVal">12</div>
+        </div>
+        <!-- Options -->
+        <div class="cb">
+          <div class="cl">🔧 Password Options</div>
+          <div class="oi"><span class="ol">🔣 Special (!@#$%^&amp;*)</span><label class="tg"><input type="checkbox" id="chSpecial" checked><span class="tr"></span></label></div>
+          <div class="oi"><span class="ol">🔢 Numbers (0-9)</span><label class="tg"><input type="checkbox" id="chNumbers" checked><span class="tr"></span></label></div>
+          <div class="oi"><span class="ol">🔤 Uppercase (A-Z)</span><label class="tg"><input type="checkbox" id="chUpper" checked><span class="tr"></span></label></div>
+          <div class="oi"><span class="ol">🔡 Lowercase (a-z)</span><label class="tg"><input type="checkbox" id="chLower" checked><span class="tr"></span></label></div>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <div class="gw">
+        <button class="bg" id="genBtn">⚡ GENERATE PASSWORD</button>
+      </div>
+
+      <!-- Strength Meter -->
+      <div class="sm">
+        <div class="sb" id="strBar">
+          <div class="ss" data-idx="0"></div>
+          <div class="ss" data-idx="1"></div>
+          <div class="ss" data-idx="2"></div>
+          <div class="ss" data-idx="3"></div>
+          <div class="ss" data-idx="4"></div>
+        </div>
+        <div class="si"><span id="strLabel">—</span><span id="strVal">—</span></div>
+      </div>
+
+      <!-- Stats -->
+      <div class="st">
+        <div class="sti"><div class="stv" id="stLen">12</div><div class="stl">Characters</div></div>
+        <div class="sti"><div class="stv" id="stEntropy">—</div><div class="stl">Entropy</div></div>
+        <div class="sti"><div class="stv" id="stStrength">—</div><div class="stl">Strength</div></div>
+        <div class="sti"><div class="stv" id="stCrack">—</div><div class="stl">Crack Time</div></div>
+      </div>
+
     </div>
-    </div>
-  </section>
-  </body>
+
+    <!-- Footer -->
+    <footer class="ft">
+      <p>⚡ Built with Neobrutalist Design</p>
+      <div class="fa">
+        <a onclick="genPw()">⟳ Regenerate</a>
+        <a onclick="copyPassword()">📋 Copy</a>
+        <a onclick="document.getElementById('lenSlider').value=20;updLen();genPw()">🛡️ Max Security</a>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+<script>
+let lastPw = '';
+const pwEl = document.getElementById('newPassword');
+const lenSl = document.getElementById('lenSlider');
+const lenVl = document.getElementById('lenVal');
+const lenFl = document.getElementById('lenFill');
+const genBtn = document.getElementById('genBtn');
+const cube = document.getElementById('cube');
+const copyBtn = document.getElementById('copyBtn');
+
+// Update length UI
+function updLen() {
+  const v = parseInt(lenSl.value);
+  lenVl.textContent = v;
+  lenFl.style.width = ((v - 8) / 16 * 100) + '%';
+  document.getElementById('stLen').textContent = v;
+}
+lenSl.addEventListener('input', updLen);
+
+// Toast
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' ' + type : '');
+  requestAnimationFrame(() => t.classList.add('show'));
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Calculate strength
+function calcStr(pw, len) {
+  let pool = 0;
+  if (/[a-z]/.test(pw)) pool += 26;
+  if (/[A-Z]/.test(pw)) pool += 26;
+  if (/[0-9]/.test(pw)) pool += 10;
+  if (/[^a-zA-Z0-9]/.test(pw)) pool += 32;
+
+  const bits = Math.log2(pool || 1) * len;
+  const yrs = Math.pow(2, bits) / (1e9 * 31536000);
+
+  let lvl = 0, lbl = 'Weak', emoji = '🟢';
+  if (bits >= 128) { lvl = 4; lbl = 'Maximum'; emoji = '🛡️'; }
+  else if (bits >= 80) { lvl = 3; lbl = 'Very Strong'; emoji = '🔒'; }
+  else if (bits >= 60) { lvl = 2; lbl = 'Strong'; emoji = '🔐'; }
+  else if (bits >= 40) { lvl = 1; lbl = 'Fair'; emoji = '🔓'; }
+
+  const crack = yrs > 1e6 ? (yrs/1e6).toFixed(1)+'M yrs'
+    : yrs > 1e3 ? (yrs/1e3).toFixed(1)+'K yrs'
+    : yrs > 1 ? yrs.toFixed(1)+' yrs'
+    : yrs > 1/12 ? (yrs*12).toFixed(1)+' mo'
+    : yrs > 1/365 ? (yrs*365).toFixed(1)+' days'
+    : (yrs*365*24).toFixed(1)+' hrs';
+
+  return { bits: bits.toFixed(1), lvl, lbl: emoji + ' ' + lbl, crack };
+}
+
+// Update strength UI
+function updStr(pw, len) {
+  const s = calcStr(pw, len);
+  document.getElementById('stEntropy').textContent = s.bits + 'b';
+  document.getElementById('stStrength').textContent = s.lbl;
+  document.getElementById('stCrack').textContent = s.crack;
+  document.getElementById('strLabel').textContent = s.lbl;
+  document.getElementById('strVal').textContent = s.bits + ' bits';
+
+  // Update segments
+  document.querySelectorAll('.ss').forEach((seg, i) => {
+    seg.className = 'ss' + (i <= s.lvl ? ' on w' + i : '');
+  });
+}
+
+// Generate password
+function genPw() {
+  const len = parseInt(lenSl.value);
+  genBtn.disabled = true;
+  genBtn.textContent = '⏳ Generating...';
+  cube.classList.add('spin');
+
+  const opts = '?special=' + document.getElementById('chSpecial').checked +
+    '&numbers=' + document.getElementById('chNumbers').checked +
+    '&upper=' + document.getElementById('chUpper').checked +
+    '&lower=' + document.getElementById('chLower').checked;
+
+  axios.get('/new/' + len + opts).then(r => {
+    if (r.data.status !== 'ok') { toast('❌ ' + r.data.result, 'err'); return; }
+    const pw = r.data.result;
+    lastPw = pw;
+
+    // Typewriter effect
+    pwEl.textContent = '';
+    pwEl.className = 'pwt';
+    let i = 0;
+    const tw = setInterval(() => {
+      if (i < pw.length) { pwEl.textContent += pw[i]; i++; }
+      else {
+        clearInterval(tw);
+        genBtn.disabled = false;
+        genBtn.textContent = '⚡ GENERATE PASSWORD';
+        cube.classList.remove('spin');
+        updStr(pw, len);
+        addHistory(pw);
+        pwEl.style.color = '';
+      }
+    }, 35);
+  }).catch(() => {
+    toast('❌ Failed to generate. Try again.', 'err');
+    genBtn.disabled = false;
+    genBtn.textContent = '⚡ GENERATE PASSWORD';
+    cube.classList.remove('spin');
+  });
+}
+document.getElementById('genBtn').addEventListener('click', genPw);
+
+// Copy password
+function copyPassword() {
+  const pw = lastPw || pwEl.textContent;
+  if (!pw || pw.startsWith('❌')) { toast('Generate a password first!', 'err'); return; }
+
+  const ok = () => {
+    copyBtn.classList.add('ok');
+    copyBtn.textContent = '✅ Copied!';
+    pwEl.classList.add('copied');
+    toast('✅ Password copied!', 'ok');
+    setTimeout(() => {
+      copyBtn.classList.remove('ok');
+      copyBtn.textContent = '📋 Copy';
+      pwEl.classList.remove('copied');
+    }, 2000);
+  };
+  const fail = () => toast('❌ Copy failed. Select manually.', 'err');
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(pw).then(ok).catch(fail);
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = pw; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy') ? ok() : fail(); }
+    catch(e) { fail(); }
+    document.body.removeChild(ta);
+  }
+}
+
+// Click password to copy
+pwEl.addEventListener('click', copyPassword);
+
+// Password History (last 5)
+const history = [];
+
+function addHistory(pw) {
+  history.unshift(pw);
+  if (history.length > 5) history.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  let hc = document.querySelector('.hl');
+  if (!hc) {
+    const hw = document.querySelector('.card');
+    const sec = document.createElement('div');
+    sec.className = 'hy';
+    sec.innerHTML = '<h3>📜 Recent Passwords</h3><div class="hl"></div>';
+    hw.appendChild(sec);
+    hc = sec.querySelector('.hl');
+  }
+  hc.innerHTML = history.map(p =>
+    '<span class="hi" onclick="useHistory(\'' + p.replace(/'/g, "\\'") + '\')">' + p.slice(0, 12) + '</span>'
+  ).join('');
+}
+
+function useHistory(pw) {
+  lastPw = pw;
+  pwEl.textContent = pw;
+  updStr(pw, pw.length);
+  copyPassword();
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) genPw();
+  if (e.ctrlKey && e.key === 'c' && pwEl === document.activeElement) { e.preventDefault(); copyPassword(); }
+});
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  updLen();
+  const ip = '<%= newPassword %>';
+  if (ip && ip !== '') {
+    lastPw = ip;
+    pwEl.textContent = ip;
+    updStr(ip, ip.length);
+    addHistory(ip);
+  }
+});
+</script>
+</body>
 </html>
